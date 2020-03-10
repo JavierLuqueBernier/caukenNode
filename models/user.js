@@ -7,7 +7,7 @@ const getAll = () => {
     });
 };
 
-/* const emailExists = (pEmail) => {
+const emailExists = (pEmail) => {
     return new Promise((resolve, reject) => {
         db.query('select * from usuarios where email = ?', [pEmail], (err, rows) => {
             if (err) return reject(err);
@@ -15,7 +15,7 @@ const getAll = () => {
             resolve(rows[0]);
         })
     });
-} */
+}
 
 /* const getById = (pAlumnoId) => {
     return new Promise((resolve, reject) => {
@@ -29,16 +29,16 @@ const getAll = () => {
     });
 }; */
 
-/* const create = ({nombre, apellidos, edad, email, matricula}) => {
+const create = ({nombre, contraseña, email, activo, premium, reputacion}) => {
     return new Promise((resolve, reject) => {
-        db.query('INSERT INTO alumnos (nombre, apellidos, email, edad, fecha_matricula, matricula) values (?,?,?,?,?,?)',
-         [nombre, apellidos, email, edad, new Date(), matricula], 
+        db.query('INSERT INTO usuarios (nombre, contraseña, email, activo, premium, fecha_alta, reputacion) values (?,?,?,?,?,?,?)',
+         [nombre, contraseña, email, activo, premium, new Date(), reputacion], 
          (err, result) => {
              if (err) reject(err);
              resolve(result);
          })
     });
-} */
+}
 
 /* const deleteById = (pAlumnoId) => {
     return new Promise((resolve, reject) => {
@@ -50,7 +50,7 @@ const getAll = () => {
 } */
 
 module.exports = { //si no exporto la funcion no la puedo utilizar fuera
-    getAll: getAll
-    //create: create,
-    //emailExists: emailExists
+    getAll: getAll,
+    create: create,
+    emailExists: emailExists
 }
