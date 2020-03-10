@@ -17,9 +17,19 @@ const emailExists = (pEmail) => {
     });
 }
 
-/* const getById = (pAlumnoId) => {
+const userExists = (pUser) => {
     return new Promise((resolve, reject) => {
-        db.query('select * from alumnos where id = ?', [pAlumnoId], (err, rows) => {
+        db.query('select * from usuarios where nombre = ?', [pUser], (err, rows) => {
+            if (err) return reject(err);
+            if (rows.length === 0) return resolve(null);
+            resolve(rows[0]);
+        })
+    });
+}
+
+/* const getById = (pUsuarioId) => {
+    return new Promise((resolve, reject) => {
+        db.query('select * from usuarios where id = ?', [pUsuarioId], (err, rows) => {
             if(err) reject(err);
             if(rows.lenght === 0) {
                 resolve(null);
@@ -43,5 +53,6 @@ const create = ({nombre, contraseña, email, activo, premium, reputacion}) => {
 module.exports = { //si no exporto la funcion no la puedo utilizar fuera
     getAll: getAll,
     create: create,
-    emailExists: emailExists
+    emailExists: emailExists,
+    userExists: userExists
 }
