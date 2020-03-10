@@ -1,6 +1,6 @@
 const getAll = () => {
     return new Promise((resolve, reject) => {
-        db.query('select * from posts', (err, rows) => {
+        db.query('select * from usuarios', (err, rows) => {
             if (err) reject(err)
             resolve(rows);
         });
@@ -39,15 +39,6 @@ const create = ({nombre, contraseña, email, activo, premium, reputacion}) => {
          })
     });
 }
-
-/* const deleteById = (pAlumnoId) => {
-    return new Promise((resolve, reject) => {
-        db.query('DELETE FROM alumnos WHERE id = ?', [pAlumnoId], (err, result) => {
-            if (err) reject(err);
-            resolve(result); 
-        })
-    })
-} */
 
 module.exports = { //si no exporto la funcion no la puedo utilizar fuera
     getAll: getAll,
