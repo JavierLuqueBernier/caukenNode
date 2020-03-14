@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 
-const categoria = require('../../models/categoria');
+const Categoria = require('../../models/categoria');
 
 // GET http://localhost:3000/api/categorias/
 
