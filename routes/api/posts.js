@@ -1,12 +1,10 @@
 const router = require('express').Router();
-
-
 const Post = require('../../models/post');
 
 // GET http://localhost:3000/api/posts/
 
-router.get('/', async (req, res) => {
-  const rows = await post.getAll();
+router.get("/", async (req, res) => {
+  const rows = await Post.getAll();
   res.json(rows);
 });
 
