@@ -19,6 +19,70 @@ const getById = pPostId => {
   });
 };
 
+// Busca los datos básicos de las covers en función de parámetros opcionales
+//FALTA: filtrado opcional por fecha y ordenado en función de todo.
+const getCovers = ({likes,limit,offset,usuario}) => {
+  return new Promise((resolve, reject) => {
+      //Si no hay valor de likes se le da el valor 0
+    likes = (likes===null || likes===undefined || likes==="")?0:likes;
+    //si no se especifica límite o sobrepasa un máximo se asigna 10
+    limit = (limit===null || limit===undefined || limit===""||limit>10)?10:limit;
+    //si no se especifica límitese asigna 0
+    offset = (offset===null || offset===undefined || offset==="")?0:offset;
+    usuario = (usuario===null || usuario===undefined || usuario==="")?'':`AND fk_usuario = ${usuario}`;
+    
+    db.query(
+      `SELECT id,titulo,imagen,likes,fk_usuario,fecha_publicacion FROM posts WHERE fk_id_anterior IS NULL AND LIKES >=? ${usuario} LIMIT ? OFFSET ?`,[parseInt(likes),parseInt(limit),parseInt(offset)],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    );
+  });
+};
+
+//Cuenta el número de posts hijos de un post
+const countChildren = (id)=>{
+  return new Promise ((resolve,reject)=>{
+    db.query(`SELECT COUNT(*) FROM posts where fk_id_anterior = ?`,[id],(err,results)=>{
+      if(err) reject(err);
+      resolve(results)
+    })
+  })
+}
+
+//Encuentra los hijos de un post, con parámetros opcionales
+//FALTA: filtrado opcional por fecha y ordenado en función de todo.
+const findChildren = ({ id, likes, limit, offset, usuario }) => {
+  return new Promise((resolve, reject) => {
+    //Si no hay valor de likes se le da el valor 0
+    likes = likes === null || likes === undefined || likes === "" ? 0 : likes;
+    //si no se especifica límite o sobrepasa un máximo se asigna 10
+    limit =
+      limit === null || limit === undefined || limit === "" || limit > 10
+        ? 10
+        : limit;
+    //si no se especifica límitese asigna 0
+    offset =
+      offset === null || offset === undefined || offset === "" ? 0 : offset;
+    usuario =
+      usuario === null || usuario === undefined || usuario === ""
+        ? ""
+        : `AND fk_usuario = ${usuario}`;
+    db.query(
+      `SELECT id,titulo,imagen,likes,fk_usuario,fecha_publicacion FROM posts WHERE fk_id_anterior = ? AND LIKES >=? ${usuario} LIMIT ? OFFSET ?`,
+      [parseInt(id),parseInt(likes), parseInt(limit), parseInt(offset)],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    );
+  });
+};
+
+
+
+
 const create = ({
   titulo,
   contenido,
@@ -77,5 +141,9 @@ const create = ({
 module.exports = {
   getAll: getAll,
   getById: getById,
-  create: create
+  getCovers:getCovers,
+  countChildren:countChildren,
+  findChildren:findChildren,
+  create: create,
+  
 };
