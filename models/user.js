@@ -7,9 +7,9 @@ const getAll = () => {
     });
 };
 
-const emailExists = (pEmail) => {
+const emailOrUserExists = (pEmail, pUser) => {
     return new Promise((resolve, reject) => {
-        db.query('select * from usuarios where email = ?', [pEmail], (err, rows) => {
+        db.query('select * from usuarios where email = ? or nombre = ?' , [pEmail, pUser], (err, rows) => {
             if (err) return reject(err);
             if (rows.length === 0) return resolve(null);
             resolve(rows[0]);
@@ -27,22 +27,13 @@ const userExists = (pUser) => {
     });
 }
 
-/* const getById = (pUsuarioId) => {
-    return new Promise((resolve, reject) => {
-        db.query('select * from usuarios where id = ?', [pUsuarioId], (err, rows) => {
-            if(err) reject(err);
-            if(rows.lenght === 0) {
-                resolve(null);
-            }
-            resolve(rows[0]);
-        })
-    });
-}; */
-
-const create = ({nombre, contraseña, email, activo, premium, reputacion}) => {
-    return new Promise((resolve, reject) => {
-        db.query('INSERT INTO usuarios (nombre, contraseña, email, activo, premium, fecha_alta, reputacion) values (?,?,?,?,?,?,?)',
-         [nombre, contraseña, email, activo, premium, new Date(), reputacion], 
+const create = ({nombre, password, email}) => {
+    return new Promise((resolve, reject) => { 
+        const activo = 'activo';
+        const premium = 'free';
+        const reputacion = 10;
+        db.query('INSERT INTO usuarios (nombre, password, email, activo, premium, fecha_alta, reputacion) values (?,?,?,?,?,?,?)',
+         [nombre, password, email, activo, premium, new Date(), reputacion], 
          (err, result) => {
              if (err) reject(err);
              resolve(result);
@@ -53,6 +44,6 @@ const create = ({nombre, contraseña, email, activo, premium, reputacion}) => {
 module.exports = { //si no exporto la funcion no la puedo utilizar fuera
     getAll: getAll,
     create: create,
-    emailExists: emailExists,
+    emailOrUserExists: emailOrUserExists,
     userExists: userExists
 }
