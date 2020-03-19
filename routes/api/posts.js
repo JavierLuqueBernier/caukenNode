@@ -60,7 +60,7 @@ router.post("/covers", async (req, res) => {
 // Devuelve un array con los datos de los posts hijo
 router.post("/children", async (req, res) => {
   try {
-    // Se cuenta el número de hijos totales y si >=3 se ignoran el resto de parámetros
+    // Se cuenta el número de hijos totales y si <=3 se ignoran el resto de parámetros
     const countChildren = await Post.countChildren(req.body.id);
     children = countChildren[0]["COUNT(*)"];
     if (children <= 3) {
