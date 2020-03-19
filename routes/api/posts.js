@@ -1,5 +1,5 @@
-const router = require('express').Router();
-const Post = require('../../models/post');
+const router = require("express").Router();
+const Post = require("../../models/post");
 
 // GET http://localhost:3000/api/posts/
 
@@ -8,8 +8,6 @@ router.get("/", async (req, res) => {
   res.json(rows);
 });
 
-
-
 // GET http://localhost:3000/api/posts/covers
 // Devuelve un array con todas las covers
 router.get("/covers", async (req, res) => {
@@ -17,23 +15,27 @@ router.get("/covers", async (req, res) => {
   res.json(rows);
 });
 
-
 // GET http://localhost:3000/api/posts/:id
 
-router.get('/:postId', async (req, res) => {
+router.get("/:postId", async (req, res) => {
   const post = await Post.getById(req.params.postId); //en esta linea hay algo mal pero no se
   res.json(post);
-})
+});
 
 // POST http://localhost:3000/api/posts
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   const result = await Post.create(req.body);
-  if(result['affectedRows'] === 1) {
-      const post = await Post.getById(result['insertId']);
-      res.json(post);
+  if (result["affectedRows"] === 1) {
+    console.log( typeof req.body.fk_ancestro)
+    //si es un post inicial se actualiza su fk_ancestro a su propia id, la idea es que en el resto de casos la fk_ancestro sea igual a la de su padre y no tener que recorrer todo el árbol hasta el origen cada vez que se necesite.
+    if(req.body.fk_ancestro===null){
+      await Post.putAncestro(result["insertId"]);
+    }
+    const post = await Post.getById(result["insertId"]);
+    res.json(post);
   } else {
-      res.json({ error: "El post no se ha insertado" });
-  }    
+    res.json({ error: "El post no se ha insertado" });
+  }
 });
 
 // POST http://localhost:3000/api/covers
@@ -47,7 +49,7 @@ router.post("/covers", async (req, res) => {
     if (rows["length"] > 0) {
       res.json(rows);
     } else {
-      res.json({error:"Covers de usuario no encontrado"});
+      res.json({ error: "Covers de usuario no encontrado" });
     }
   } catch (err) {
     res.json(err);
@@ -60,19 +62,19 @@ router.post("/children", async (req, res) => {
   try {
     // Se cuenta el número de hijos totales y si >=3 se ignoran el resto de parámetros
     const countChildren = await Post.countChildren(req.body.id);
-    children = countChildren[0]['COUNT(*)'];
-    if(children<=3){
-      req.body.limit=null;
-      req.body.offset=null;
-      req.body.likes=null;
-      req.body.usuario=null;
+    children = countChildren[0]["COUNT(*)"];
+    if (children <= 3) {
+      req.body.limit = null;
+      req.body.offset = null;
+      req.body.likes = null;
+      req.body.usuario = null;
     }
     const results = await Post.findChildren(req.body);
     console.log(results["length"]);
     if (results["length"] > 0) {
       res.json(results);
     } else {
-      res.json({warning:"Este post no tiene continuación"});
+      res.json({ warning: "Este post no tiene continuación" });
     }
   } catch (err) {
     res.json(err);
