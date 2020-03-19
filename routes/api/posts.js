@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const Post = require("../../models/post");
+const middlewares = require("../middlewares");
 
 // GET http://localhost:3000/api/posts/
 
@@ -22,21 +23,6 @@ router.get("/:postId", async (req, res) => {
   res.json(post);
 });
 
-// POST http://localhost:3000/api/posts
-router.post("/", async (req, res) => {
-  const result = await Post.create(req.body);
-  if (result["affectedRows"] === 1) {
-    console.log( typeof req.body.fk_ancestro)
-    //si es un post inicial se actualiza su fk_ancestro a su propia id, la idea es que en el resto de casos la fk_ancestro sea igual a la de su padre y no tener que recorrer todo el árbol hasta el origen cada vez que se necesite.
-    if(req.body.fk_ancestro===null){
-      await Post.putAncestro(result["insertId"]);
-    }
-    const post = await Post.getById(result["insertId"]);
-    res.json(post);
-  } else {
-    res.json({ error: "El post no se ha insertado" });
-  }
-});
 
 // POST http://localhost:3000/api/covers
 // Devuelve un array con varias covers, se pasa opcionalmente por el body:
@@ -78,6 +64,29 @@ router.post("/children", async (req, res) => {
     }
   } catch (err) {
     res.json(err);
+  }
+});
+
+/* **************************************************************************
+/                   ¡¡¡ACCIONES QUE REQUIEREN LOGIN!!!!                     /
+****************************************************************************/
+router.use(middlewares.checkToken);
+router.use(middlewares.registerAction);
+
+// POST http://localhost:3000/api/posts
+router.post("/create", async (req, res) => {
+  console.log('EXISTO')
+  const result = await Post.create(req.body);
+  if (result["affectedRows"] === 1) {
+    console.log( typeof req.body.fk_ancestro)
+    //si es un post inicial se actualiza su fk_ancestro a su propia id, la idea es que en el resto de casos la fk_ancestro sea igual a la de su padre y no tener que recorrer todo el árbol hasta el origen cada vez que se necesite.
+    if(req.body.fk_ancestro===null){
+      await Post.putAncestro(result["insertId"]);
+    }
+    const post = await Post.getById(result["insertId"]);
+    res.json(post);
+  } else {
+    res.json({ error: "El post no se ha insertado" });
   }
 });
 
