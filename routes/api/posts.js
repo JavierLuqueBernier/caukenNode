@@ -42,7 +42,7 @@ router.post("/covers", async (req, res) => {
   }
 });
 
-// POST http://localhost:3000/api/children
+// POST http://localhost:3000/api/posts/children
 // Devuelve un array con los datos de los posts hijo
 router.post("/children", async (req, res) => {
   try {
