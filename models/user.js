@@ -7,6 +7,18 @@ const getAll = () => {
     });
 };
 
+const getById = pUserId => {
+    return new Promise((resolve, reject) => {
+      db.query("select * from users where id = ?", [pUserId], (err, rows) => {
+        if (err) reject(err);
+        if (rows.lenght === 0) {
+          resolve(null);
+        }
+        resolve(rows[0]);
+      });
+    });
+  };
+
 const emailOrUserExists = (pEmail, pUser) => {
     return new Promise((resolve, reject) => {
         db.query('select * from usuarios where email = ? or nombre = ?' , [pEmail, pUser], (err, rows) => {
@@ -43,6 +55,7 @@ const create = ({nombre, password, email}) => {
 
 module.exports = { //si no exporto la funcion no la puedo utilizar fuera
     getAll: getAll,
+    getById: getById,
     create: create,
     emailOrUserExists: emailOrUserExists,
     userExists: userExists
