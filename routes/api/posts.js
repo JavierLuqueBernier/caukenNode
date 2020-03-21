@@ -63,7 +63,7 @@ router.post("/children", async (req, res) => {
   }
 });
 
-// POST http://localhost:3000/api/posts/getlikes
+// POST http://localhost:3000/api/posts/likes
 router.post("/likes", async (req, res) => {
   try {
     const result = await Post.getLikes(req.body.id);
@@ -100,11 +100,25 @@ router.post("/create", async (req, res) => {
   }
 });
 
+// PUT http://localhost:3000/api/posts/checklikes
+//Chequea si un usuario tiene likes en un post
+router.post("/checklike", async (req, res) => {
+  try {
+    const searchLike = await Post.searchLike(req.body);
+    console.log(searchLike);
+    if (searchLike.length === 0) {
+      res.json({activo:false});
+    } else if (searchLike[0].activo === "inactivo") {
+      res.json({ activo: false });
+    } else if (searchLike[0].activo === "activo") {
+      res.json({ activo: true });
+    }
+  } catch (err) {
+    res.json(err);
+  }
+});
 
-
-
-
-// PUT http://localhost:3000/api/posts/getlikes
+// PUT http://localhost:3000/api/posts/likes
 // Proceso que añade un like a un post. Si la relación ya existía la actualiza a like activo o inactivo
 router.put("/likes", async (req, res) => {
   try {
