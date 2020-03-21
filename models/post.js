@@ -92,7 +92,7 @@ const findChildren = ({ id, likes, limit, offset, usuario }) => {
   });
 };
 
-//devuelve el numero de likes de un post
+//devuelve la columna de likes de un post
 const getLikes = id => {
   return new Promise((resolve, reject) => {
     db.query(`SELECT likes FROM posts WHERE id=?`, [id], (err, results) => {
@@ -102,45 +102,7 @@ const getLikes = id => {
   });
 };
 
-const searchLike = ({ postid, userid }) => {
-  return new Promise((resolve, reject) => {
-    db.query(
-      "SELECT * FROM tbi_likes WHERE fk_post=? AND fk_usuario=?",
-      [postid, userid],
-      (err, rows) => {
-        if (err) reject(err);
-        resolve(rows);
-      }
-    );
-  });
-};
-
-const insertLike = ({ postid, userid }) => {
-  return new Promise((resolve, reject) => {
-    db.query(
-      "INSERT INTO tbi_likes (fk_usuario,fk_post,activo,fecha_voto) values (?,?,?,?)",
-      [userid, postid, "activo", new Date()],
-      (err, results) => {
-        if (err) reject(err);
-        resolve(results);
-      }
-    );
-  });
-};
-
-const updateLike = ({ id, activo }) => {
-  return new Promise((resolve, reject) => {
-    db.query(
-      `UPDATE tbi_likes SET activo=? WHERE id=?`,
-      [activo, id],
-      (err, results) => {
-        if (err) reject(err);
-        resolve(results);
-      }
-    );
-  });
-};
-
+//Actualiza la columna likes en la tabla posts
 const updateLikes = ({ postid }, { activo }) => {
   return new Promise((resolve, reject) => {
     let operacion = "+1";
@@ -157,6 +119,50 @@ const updateLikes = ({ postid }, { activo }) => {
     );
   });
 };
+
+//Busca una coincidencia usuario-like en tbi_likes
+const searchLike = ({ postid, userid }) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "SELECT * FROM tbi_likes WHERE fk_post=? AND fk_usuario=?",
+      [postid, userid],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    );
+  });
+};
+
+//Inserta una fila de like en la tbi_likes
+const insertLike = ({ postid, userid }) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "INSERT INTO tbi_likes (fk_usuario,fk_post,activo,fecha_voto) values (?,?,?,?)",
+      [userid, postid, "activo", new Date()],
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results);
+      }
+    );
+  });
+};
+
+//Actualiza la columna activo en la tbi_likes
+const updateLike = ({ id, activo }) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      `UPDATE tbi_likes SET activo=? WHERE id=?`,
+      [activo, id],
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results);
+      }
+    );
+  });
+};
+
+
 
 
 //Crear un post
@@ -241,10 +247,10 @@ module.exports = {
   countChildren: countChildren,
   findChildren: findChildren,
   getLikes: getLikes,
+  updateLikes:updateLikes,
   searchLike: searchLike,
   insertLike: insertLike,
   updateLike: updateLike,
-  updateLikes:updateLikes,
   create: create,
   putAncestro: putAncestro
 };
