@@ -16,8 +16,6 @@ router.get("/covers", async (req, res) => {
   res.json(rows);
 });
 
-
-
 // GET http://localhost:3000/api/posts/:id
 
 router.get("/:postId", async (req, res) => {
@@ -25,15 +23,12 @@ router.get("/:postId", async (req, res) => {
   res.json(post);
 });
 
-
 // POST http://localhost:3000/api/covers
 // Devuelve un array con varias covers, se pasa opcionalmente por el body:
 //{limit:number,offset:number,likes:number,usuario:id} donde limit es la cantidad de covers y offset desde donde empieza. Si no hay filtro de likes da el valor 0 automáticamente. Si no hay autor se devuelven las covers de todos los autores.
 router.post("/covers", async (req, res) => {
   try {
-    console.log(req.body);
     const rows = await Post.getCovers(req.body);
-    console.log(rows["length"]);
     if (rows["length"] > 0) {
       res.json(rows);
     } else {
@@ -58,7 +53,6 @@ router.post("/children", async (req, res) => {
       req.body.usuario = null;
     }
     const results = await Post.findChildren(req.body);
-    console.log(results["length"]);
     if (results["length"] > 0) {
       res.json(results);
     } else {
@@ -70,19 +64,19 @@ router.post("/children", async (req, res) => {
 });
 
 // POST http://localhost:3000/api/posts/getlikes
-router.post("/getlikes", async (req, res) => {
+router.post("/likes", async (req, res) => {
   try {
-    console.log('paso por api');
     const result = await Post.getLikes(req.body.id);
-     if (result.length===1) {
-     res.json(result);  
-    }else{
-      res.json({errors: 'Post no encontrado'});
+    if (result.length === 1) {
+      res.json(result);
+    } else {
+      res.json({ errors: "Post no encontrado" });
     }
   } catch (err) {
     res.json(err);
   }
 });
+
 
 
 /* **************************************************************************
@@ -93,18 +87,45 @@ router.use(middlewares.registerAction);
 
 // POST http://localhost:3000/api/posts
 router.post("/create", async (req, res) => {
-  console.log('EXISTO')
   const result = await Post.create(req.body);
   if (result["affectedRows"] === 1) {
-    console.log( typeof req.body.fk_ancestro)
     //si es un post inicial se actualiza su fk_ancestro a su propia id, la idea es que en el resto de casos la fk_ancestro sea igual a la de su padre y no tener que recorrer todo el árbol hasta el origen cada vez que se necesite.
-    if(req.body.fk_ancestro===null){
+    if (req.body.fk_ancestro === null) {
       await Post.putAncestro(result["insertId"]);
     }
     const post = await Post.getById(result["insertId"]);
     res.json(post);
   } else {
     res.json({ error: "El post no se ha insertado" });
+  }
+});
+
+
+
+
+
+// PUT http://localhost:3000/api/posts/getlikes
+// Proceso que añade un like a un post. Si la relación ya existía la actualiza a like activo o inactivo
+router.put("/likes", async (req, res) => {
+  try {
+   const searchLike= await Post.searchLike(req.body);
+   if(searchLike.length===0){
+    await Post.insertLike(req.body);
+    const updateLikes = await Post.updateLikes(req.body,{activo:'activo'})
+    res.json(updateLikes)
+
+   }else if(searchLike[0].activo==='activo'){
+     await Post.updateLike({id:searchLike[0].id,activo:'inactivo'});
+     const updateLikes = await Post.updateLikes(req.body, { activo: 'inactivo' });
+     res.json(updateLikes);
+
+   }else if(searchLike[0].activo==='inactivo'){
+    await Post.updateLike({id:searchLike[0].id,activo: 'activo'});
+     const updateLikes = await Post.updateLikes(req.body, { activo: 'activo' });
+     res.json(updateLikes);
+   }
+  } catch (err) {
+    res.json(err);
   }
 });
 

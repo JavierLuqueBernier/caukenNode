@@ -92,13 +92,34 @@ const findChildren = ({ id, likes, limit, offset, usuario }) => {
   });
 };
 
-
 //devuelve el numero de likes de un post
 const getLikes = id => {
   return new Promise((resolve, reject) => {
+    db.query(`SELECT likes FROM posts WHERE id=?`, [id], (err, results) => {
+      if (err) reject(err);
+      resolve(results);
+    });
+  });
+};
+
+const searchLike = ({ postid, userid }) => {
+  return new Promise((resolve, reject) => {
     db.query(
-      `SELECT likes FROM posts WHERE id=?`,
-      [id],
+      "SELECT * FROM tbi_likes WHERE fk_post=? AND fk_usuario=?",
+      [postid, userid],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    );
+  });
+};
+
+const insertLike = ({ postid, userid }) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "INSERT INTO tbi_likes (fk_usuario,fk_post,activo,fecha_voto) values (?,?,?,?)",
+      [userid, postid, "activo", new Date()],
       (err, results) => {
         if (err) reject(err);
         resolve(results);
@@ -107,6 +128,99 @@ const getLikes = id => {
   });
 };
 
+const updateLike = ({ id, activo }) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      `UPDATE tbi_likes SET activo=? WHERE id=?`,
+      [activo, id],
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results);
+      }
+    );
+  });
+};
+
+const updateLikes = ({ postid }, { activo }) => {
+  return new Promise((resolve, reject) => {
+    let operacion = "+1";
+    if (activo === "inactivo") {
+      operacion = "-1";
+    }
+    db.query(
+      `UPDATE posts SET likes=likes${operacion} WHERE id=?`,
+      [postid],
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results);
+      }
+    );
+  });
+};
+
+const putLike = ({ postid, userid }) => {
+  let activo = "";
+  return new Promise((resolve, reject) => {
+    //Primero se busca si el usuario ha hecho like
+    db.query(
+      "SELECT * FROM tbi_likes WHERE fk_post=? AND fk_usuario=?",
+      [postid, userid],
+      (err, rows) => {
+        if (err) reject(err);
+        //Si no ha hecho like todavía se inserta el like
+        else if (rows.length === 0) {
+          db.query(
+            "INSERT INTO tbi_likes (fk_usuario,fk_post,activo,fecha_voto) values (?,?,?,?)",
+            [userid, postid, "activo", new Date()],
+            (err, insresults) => {
+              if (err) reject(err);
+              db.query(
+                `UPDATE posts SET likes=likes+1 WHERE id=?`,
+                [postid],
+                (err, updatelikesresults) => {
+                  if (err) reject(err);
+                  resolve(updatelikesresults);
+                }
+              );
+            }
+          );
+          //Si ha hecho like o dislike se actualiza el estado
+        } else if (rows.length === 1) {
+          //Si en tbi_likes el like era activo, la variable pasa a inactivo y se actualiza el post restando un like
+          if (rows[0].activo === "activo") {
+            activo = "inactivo";
+            db.query(
+              `UPDATE posts SET likes=likes-1 WHERE id=?`,
+              [postid],
+              (err, updatelikesresults) => {
+                if (err) reject(err);
+              }
+            );
+            //Si en tbi_likes el like era inactivo, la variable pasa a inactivo y se actualiza el post sumando un like
+          } else {
+            activo = "activo";
+            db.query(
+              `UPDATE posts SET likes=likes+1 WHERE id=?`,
+              [postid],
+              (err, updatelikesresults) => {
+                if (err) reject(err);
+              }
+            );
+          }
+          //Se actializa la  tbi_likes con activo o inactivo
+          db.query(
+            `UPDATE tbi_likes SET activo=? WHERE id=?`,
+            [activo, rows[0].id],
+            (err, results) => {
+              if (err) reject(err);
+              resolve({ results, activo });
+            }
+          );
+        }
+      }
+    );
+  });
+};
 
 //Crear un post
 // [X] Necesita fk_ancestro
@@ -160,7 +274,7 @@ const create = ({
         new Date(),
         fk_id_anterior,
         fk_usuario,
-        fk_ancestro,
+        fk_ancestro
       ],
       (err, result) => {
         if (err) reject(err);
@@ -170,20 +284,18 @@ const create = ({
   });
 };
 
-const putAncestro = ( id ) => {
-  return new Promise((resolve,reject)=>{
-db.query(
-    "UPDATE posts SET fk_ancestro=? WHERE id=?",
-    [id, id],
-    (err, result) => {
-      if (err) reject(err);
-      resolve(result);
-    }
-  )}
-  )}
-    
-    
-  
+const putAncestro = id => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "UPDATE posts SET fk_ancestro=? WHERE id=?",
+      [id, id],
+      (err, result) => {
+        if (err) reject(err);
+        resolve(result);
+      }
+    );
+  });
+};
 
 module.exports = {
   getAll: getAll,
@@ -191,7 +303,12 @@ module.exports = {
   getCovers: getCovers,
   countChildren: countChildren,
   findChildren: findChildren,
-  getLikes:getLikes,
+  getLikes: getLikes,
+  searchLike: searchLike,
+  insertLike: insertLike,
+  putLike: putLike,
+  updateLike: updateLike,
+  updateLikes:updateLikes,
   create: create,
   putAncestro: putAncestro
 };
