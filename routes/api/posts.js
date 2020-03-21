@@ -16,6 +16,8 @@ router.get("/covers", async (req, res) => {
   res.json(rows);
 });
 
+
+
 // GET http://localhost:3000/api/posts/:id
 
 router.get("/:postId", async (req, res) => {
@@ -66,6 +68,22 @@ router.post("/children", async (req, res) => {
     res.json(err);
   }
 });
+
+// POST http://localhost:3000/api/posts/getlikes
+router.post("/getlikes", async (req, res) => {
+  try {
+    console.log('paso por api');
+    const result = await Post.getLikes(req.body.id);
+     if (result.length===1) {
+     res.json(result);  
+    }else{
+      res.json({errors: 'Post no encontrado'});
+    }
+  } catch (err) {
+    res.json(err);
+  }
+});
+
 
 /* **************************************************************************
 /                   ¡¡¡ACCIONES QUE REQUIEREN LOGIN!!!!                     /

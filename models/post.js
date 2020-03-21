@@ -93,6 +93,21 @@ const findChildren = ({ id, likes, limit, offset, usuario }) => {
 };
 
 
+//devuelve el numero de likes de un post
+const getLikes = id => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      `SELECT likes FROM posts WHERE id=?`,
+      [id],
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results);
+      }
+    );
+  });
+};
+
+
 //Crear un post
 // [X] Necesita fk_ancestro
 // [ ] Necesita validadores de longitud
@@ -176,6 +191,7 @@ module.exports = {
   getCovers: getCovers,
   countChildren: countChildren,
   findChildren: findChildren,
+  getLikes:getLikes,
   create: create,
   putAncestro: putAncestro
 };
