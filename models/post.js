@@ -163,6 +163,31 @@ const updateLike = ({ id, activo }) => {
 };
 
 
+//Devuelve los comentarios de un post
+
+const getComments = ({id,limit,offset,usuario})=>{
+  return new Promise ((resolve,reject)=>{
+    //si no se especifica límite o sobrepasa un máximo se asigna 10
+    limit =
+      limit === null || limit === undefined || limit === "" || limit > 10
+        ? 10
+        : limit;
+    //si no se especifica límitese asigna 0
+    offset =
+      offset === null || offset === undefined || offset === "" ? 0 : offset;
+    usuario =
+      usuario === null || usuario === undefined || usuario === ""
+        ? ""
+        : `AND fk_usuario = ${usuario}`;
+    db.query(
+     `SELECT tbi_comentarios.id,tbi_comentarios.contenido,tbi_comentarios.fk_usuario,tbi_comentarios.fk_post,tbi_comentarios.fecha_publicacion, usuarios.nombre FROM tbi_comentarios, usuarios WHERE fk_usuario = usuarios.id and fk_post = ? ${usuario} LIMIT ? OFFSET ?`,[id,limit,offset],(err,rows)=>{
+      if(err) reject(err);
+      resolve(rows);
+     }
+    );
+  })
+}
+
 
 
 //Crear un post
@@ -251,6 +276,7 @@ module.exports = {
   searchLike: searchLike,
   insertLike: insertLike,
   updateLike: updateLike,
+  getComments:getComments,
   create: create,
   putAncestro: putAncestro
 };

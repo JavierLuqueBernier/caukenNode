@@ -77,6 +77,20 @@ router.post("/likes", async (req, res) => {
   }
 });
 
+// POST http://localhost:3000/api/posts/comments
+router.post("/comments", async (req, res) => {
+  try {
+    const result = await Post.getComments(req.body);
+    if (result.length >=1 ) {
+      res.json(result);
+    } else {
+      res.json({ warning: "Post sin comentarios" });
+    }
+  } catch (err) {
+    res.json(err);
+  }
+});
+
 
 
 /* **************************************************************************
