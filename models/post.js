@@ -163,8 +163,7 @@ const updateLike = ({ id, activo }) => {
 };
 
 
-//Devuelve los comentarios de un post
-
+//Devuelve los comentarios y autor de un post. Parámetros opcionales
 const getComments = ({id,limit,offset,usuario})=>{
   return new Promise ((resolve,reject)=>{
     //si no se especifica límite o sobrepasa un máximo se asigna 10
@@ -180,10 +179,12 @@ const getComments = ({id,limit,offset,usuario})=>{
         ? ""
         : `AND fk_usuario = ${usuario}`;
     db.query(
-     `SELECT tbi_comentarios.id,tbi_comentarios.contenido,tbi_comentarios.fk_usuario,tbi_comentarios.fk_post,tbi_comentarios.fecha_publicacion, usuarios.nombre FROM tbi_comentarios, usuarios WHERE fk_usuario = usuarios.id and fk_post = ? ${usuario} LIMIT ? OFFSET ?`,[id,limit,offset],(err,rows)=>{
-      if(err) reject(err);
-      resolve(rows);
-     }
+      `SELECT tbi_comentarios.id,tbi_comentarios.contenido,tbi_comentarios.fk_usuario,tbi_comentarios.fk_post,tbi_comentarios.fecha_publicacion, usuarios.nombre FROM tbi_comentarios, usuarios WHERE fk_usuario = usuarios.id and fk_post = ? ${usuario} LIMIT ? OFFSET ?`,
+      [id, parseInt(limit), parseInt(offset)],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
     );
   })
 }
