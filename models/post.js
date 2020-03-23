@@ -19,7 +19,7 @@ const getById = pPostId => {
   });
 };
 
-// Busca los datos básicos de las covers en función de parámetros opcionales
+// Busca los datos básicos de las covers en función de parámetros opcionales.
 //FALTA: filtrado opcional por fecha y ordenado en función de todo.
 const getCovers = ({ likes, limit, offset, usuario }) => {
   return new Promise((resolve, reject) => {
