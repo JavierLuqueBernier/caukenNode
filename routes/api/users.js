@@ -53,7 +53,7 @@ router.post('/login', async (req, res) => {
         const iguales = bcrypt.compareSync(req.body.password, user.password);
         console.log(iguales)
         if(iguales) {
-            res.json({ success: createToken(user),usuario: user.id })
+            res.json({ success: createToken(user),userid: user.id })
         } else {
             res.status(401).json({ error: 'Error en nombre2' });
         }
@@ -65,7 +65,7 @@ router.post('/login', async (req, res) => {
 
 router.post('/checktoken', async (req,res)=>{
    
-     if (!req.body["usertoken"]) {
+     if (!req.body["usertoken"]||!req.body["userid"]) {
        return res.json({login:false});
      }
      //2 - Comprobar si token es correcto
@@ -74,7 +74,7 @@ router.post('/checktoken', async (req,res)=>{
      try {
        payload = jwt.decode(token, process.env.SECRET_KEY);
        const fechaActual = moment().unix();
-       if (fechaActual > payload.fechaExpiracion) {
+       if (fechaActual > payload.fechaExpiracion|| payload.userid!=req.body.userid) {
          return res.json({ login: false });
        }
        console.log("token correcto");
@@ -87,7 +87,7 @@ router.post('/checktoken', async (req,res)=>{
 
 const createToken = (pUser) => {
     const payload = {
-        usuarioId: pUser.id,
+        userid: pUser.id,
         fechaCreacion: moment().unix(), //unix es para trabajar con segundos
         /* fechaExpiracion: moment().add(43200, 'minutes').unix() //esto es igual a un mes */
         fechaExpiracion: moment().add(30, 'minutes').unix() //esto es igual a un mes

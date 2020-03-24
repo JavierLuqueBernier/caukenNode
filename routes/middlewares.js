@@ -2,7 +2,6 @@ const jwt = require("jwt-simple");
 const moment = require("moment");
 const fs = require("fs");
 
-
 const checkToken = (req, res, next) => {
   // 1 - Comprobar si existe la cabecera user-token
   if (!req.body["usertoken"]) {
@@ -17,9 +16,12 @@ const checkToken = (req, res, next) => {
     return res.json({ error: "El token no es válido" });
   }
 
-  //3 - Mirar si el token ha expirado
+  //3 - Mirar si el token ha expirado o la id de usuario no coincide
   const fechaActual = moment().unix();
-  if (fechaActual > payload.fechaExpiracion) {
+  if (
+    fechaActual > payload.fechaExpiracion ||
+    req.body.userid != payload.userid
+  ) {
     return res.json({ error: "El token no es válido" });
   }
   req.payload = payload;
@@ -27,8 +29,11 @@ const checkToken = (req, res, next) => {
 };
 
 //Guarda las acciones de los usuarios
-const registerAction = (req,res,next)=>{
-  fs.appendFileSync('userActions.log',`Usuario:${req.payload.usuarioId}. Método: ${req.method}. Url: ${req.url}.`)
+const registerAction = (req, res, next) => {
+  fs.appendFileSync(
+    "userActions.log",
+    `Usuario:${req.payload.userid}. Método: ${req.method}. Url: ${req.url}.`
+  );
   next();
 };
 

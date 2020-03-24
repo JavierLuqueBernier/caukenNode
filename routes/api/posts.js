@@ -96,7 +96,6 @@ router.post("/comments", async (req, res) => {
 
 
 
-
 /* **************************************************************************
 /                   ¡¡¡ACCIONES QUE REQUIEREN LOGIN!!!!                     /
 ****************************************************************************/
@@ -165,6 +164,18 @@ router.put("/likes", async (req, res) => {
 router.post("/comments/create", async (req, res) => {
   try {
     const result = await Post.createComment(req.body);
+    res.json(result);
+  } catch (err) {
+    res.json(err);
+  }
+});
+
+// POST http://localhost:3000/api/posts/comments/create
+router.delete("/comments/delete", async (req, res) => {
+  console.log('paso por api delete')
+  console.log(req.body);
+  try {
+    const result = await Post.deleteComment(req.body);
     res.json(result);
   } catch (err) {
     res.json(err);

@@ -198,6 +198,16 @@ const createComment = ({fk_usuario,fk_post,contenido})=>{
   })
 }
 
+const deleteComment =({id,fk_usuario,fk_post})=>{
+  console.log('Paso por delete')
+  return new Promise((resolve,reject)=>{
+    db.query("DELETE FROM tbi_comentarios WHERE id=? AND fk_usuario=? AND fk_post=?",[id,fk_usuario,fk_post],(err,result)=>{
+      if(err) reject(err);
+      resolve(result);
+    });
+  })
+}
+
 
 
 //Crear un post
@@ -288,6 +298,7 @@ module.exports = {
   updateLike: updateLike,
   getComments:getComments,
   createComment:createComment,
+  deleteComment:deleteComment,
   create: create,
   putAncestro: putAncestro
 };
