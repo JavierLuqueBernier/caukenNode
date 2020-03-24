@@ -179,7 +179,7 @@ const getComments = ({id,limit,offset,usuario})=>{
         ? ""
         : `AND fk_usuario = ${usuario}`;
     db.query(
-      `SELECT tbi_comentarios.id,tbi_comentarios.contenido,tbi_comentarios.fk_usuario,tbi_comentarios.fk_post,tbi_comentarios.fecha_publicacion, usuarios.nombre FROM tbi_comentarios, usuarios WHERE fk_usuario = usuarios.id and fk_post = ? ${usuario} LIMIT ? OFFSET ?`,
+      `SELECT tbi_comentarios.id,tbi_comentarios.contenido,tbi_comentarios.fk_usuario,tbi_comentarios.fk_post,tbi_comentarios.fecha_publicacion, usuarios.nombre FROM tbi_comentarios, usuarios WHERE fk_usuario = usuarios.id and fk_post = ? ${usuario} ORDER BY tbi_comentarios.fecha_publicacion DESC LIMIT ? OFFSET ? `,
       [id, parseInt(limit), parseInt(offset)],
       (err, rows) => {
         if (err) reject(err);

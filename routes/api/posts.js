@@ -91,14 +91,7 @@ router.post("/comments", async (req, res) => {
   }
 });
 
-router.post("/comments/create", async (req,res)=>{
-try{
-  const result = await Post.createComment(req.body);
-  res.json(result);
-}catch(err){
-  res.json(err);
-}
-})
+
 
 
 
@@ -163,6 +156,16 @@ router.put("/likes", async (req, res) => {
      const updateLikes = await Post.updateLikes(req.body, { activo: 'activo' });
      res.json(updateLikes);
    }
+  } catch (err) {
+    res.json(err);
+  }
+});
+
+// POST http://localhost:3000/api/posts/comments/create
+router.post("/comments/create", async (req, res) => {
+  try {
+    const result = await Post.createComment(req.body);
+    res.json(result);
   } catch (err) {
     res.json(err);
   }
