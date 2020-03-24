@@ -39,7 +39,7 @@ const getCovers = ({ likes, limit, offset, usuario }) => {
         : `AND fk_usuario = ${usuario}`;
 
     db.query(
-      `SELECT id,titulo,imagen,likes,fk_usuario,fecha_publicacion FROM posts WHERE fk_id_anterior IS NULL AND LIKES >=? ${usuario} LIMIT ? OFFSET ?`,
+      `SELECT id,titulo,imagen,likes,fk_usuario,fecha_publicacion FROM posts WHERE fk_id_anterior IS NULL AND LIKES >=? ${usuario} AND publico='publico' LIMIT ? OFFSET ?`,
       [parseInt(likes), parseInt(limit), parseInt(offset)],
       (err, rows) => {
         if (err) reject(err);
@@ -82,7 +82,7 @@ const findChildren = ({ id, likes, limit, offset, usuario }) => {
         ? ""
         : `AND fk_usuario = ${usuario}`;
     db.query(
-      `SELECT posts.id,posts.titulo,posts.imagen,posts.likes,posts.fk_usuario, posts.fecha_publicacion, usuarios.nombre FROM posts, usuarios WHERE fk_usuario = usuarios.id and fk_id_anterior = ? AND LIKES >=? ${usuario} LIMIT ? OFFSET ?`,
+      `SELECT posts.id,posts.titulo,posts.imagen,posts.likes,posts.fk_usuario, posts.fecha_publicacion, usuarios.nombre FROM posts, usuarios WHERE fk_usuario = usuarios.id and fk_id_anterior = ? AND LIKES >=? AND posts.publico='publico' ${usuario} LIMIT ? OFFSET ?`,
       [parseInt(id), parseInt(likes), parseInt(limit), parseInt(offset)],
       (err, rows) => {
         if (err) reject(err);
