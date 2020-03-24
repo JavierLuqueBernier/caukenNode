@@ -55,9 +55,9 @@ const countChildren = id => {
     db.query(
       `SELECT COUNT(*) FROM posts where fk_id_anterior = ?`,
       [id],
-      (err, results) => {
+      (err, result) => {
         if (err) reject(err);
-        resolve(results);
+        resolve(result);
       }
     );
   });
@@ -95,9 +95,9 @@ const findChildren = ({ id, likes, limit, offset, usuario }) => {
 //devuelve la columna de likes de un post
 const getLikes = id => {
   return new Promise((resolve, reject) => {
-    db.query(`SELECT likes FROM posts WHERE id=?`, [id], (err, results) => {
+    db.query(`SELECT likes FROM posts WHERE id=?`, [id], (err, result) => {
       if (err) reject(err);
-      resolve(results);
+      resolve(result);
     });
   });
 };
@@ -112,9 +112,9 @@ const updateLikes = ({ postid }, { activo }) => {
     db.query(
       `UPDATE posts SET likes=likes${operacion} WHERE id=?`,
       [postid],
-      (err, results) => {
+      (err, result) => {
         if (err) reject(err);
-        resolve(results);
+        resolve(result);
       }
     );
   });
@@ -140,9 +140,9 @@ const insertLike = ({ postid, userid }) => {
     db.query(
       "INSERT INTO tbi_likes (fk_usuario,fk_post,activo,fecha_voto) values (?,?,?,?)",
       [userid, postid, "activo", new Date()],
-      (err, results) => {
+      (err, result) => {
         if (err) reject(err);
-        resolve(results);
+        resolve(result);
       }
     );
   });
@@ -154,9 +154,9 @@ const updateLike = ({ id, activo }) => {
     db.query(
       `UPDATE tbi_likes SET activo=? WHERE id=?`,
       [activo, id],
-      (err, results) => {
+      (err, result) => {
         if (err) reject(err);
-        resolve(results);
+        resolve(result);
       }
     );
   });
@@ -186,6 +186,15 @@ const getComments = ({id,limit,offset,usuario})=>{
         resolve(rows);
       }
     );
+  })
+}
+
+const createComment = ({fk_usuario,fk_post,contenido})=>{
+  return new Promise((resolve,reject)=>{
+    db.query("INSERT INTO tbi_comentarios (fk_usuario, fk_post, contenido, fecha_publicacion) values (?,?,?,?)",[fk_usuario,fk_post,contenido,new Date()],(err,result)=>{
+      if(err) reject(err);
+      resolve(result);
+    })
   })
 }
 
@@ -278,6 +287,7 @@ module.exports = {
   insertLike: insertLike,
   updateLike: updateLike,
   getComments:getComments,
+  createComment:createComment,
   create: create,
   putAncestro: putAncestro
 };

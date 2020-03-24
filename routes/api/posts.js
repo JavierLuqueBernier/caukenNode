@@ -52,9 +52,9 @@ router.post("/children", async (req, res) => {
       req.body.likes = null;
       req.body.usuario = null;
     }
-    const results = await Post.findChildren(req.body);
-    if (results["length"] > 0) {
-      res.json(results);
+    const result = await Post.findChildren(req.body);
+    if (result["length"] > 0) {
+      res.json(result);
     } else {
       res.json({ warning: "Este post no tiene continuación" });
     }
@@ -90,6 +90,17 @@ router.post("/comments", async (req, res) => {
     res.json(err);
   }
 });
+
+router.post("/comments/create", async (req,res)=>{
+try{
+  const result = await Post.createComment(req.body);
+  res.json(result);
+}catch(err){
+  res.json(err);
+}
+})
+
+
 
 
 
