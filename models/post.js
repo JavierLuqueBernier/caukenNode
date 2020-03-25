@@ -92,6 +92,19 @@ const findChildren = ({ id, likes, limit, offset, usuario }) => {
   });
 };
 
+const getFather = id => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "SELECT * FROM posts WHERE id = ?",
+      [id],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    );
+  });
+};
+
 //devuelve la columna de likes de un post
 const getLikes = id => {
   return new Promise((resolve, reject) => {
@@ -162,10 +175,9 @@ const updateLike = ({ id, activo }) => {
   });
 };
 
-
 //Devuelve los comentarios y autor de un post. Parámetros opcionales
-const getComments = ({id,limit,offset,usuario})=>{
-  return new Promise ((resolve,reject)=>{
+const getComments = ({ id, limit, offset, usuario }) => {
+  return new Promise((resolve, reject) => {
     //si no se especifica límite o sobrepasa un máximo se asigna 10
     limit =
       limit === null || limit === undefined || limit === "" || limit > 10
@@ -186,29 +198,35 @@ const getComments = ({id,limit,offset,usuario})=>{
         resolve(rows);
       }
     );
-  })
-}
+  });
+};
 
-const createComment = ({fk_usuario,fk_post,contenido})=>{
-  return new Promise((resolve,reject)=>{
-    db.query("INSERT INTO tbi_comentarios (fk_usuario, fk_post, contenido, fecha_publicacion) values (?,?,?,?)",[fk_usuario,fk_post,contenido,new Date()],(err,result)=>{
-      if(err) reject(err);
-      resolve(result);
-    })
-  })
-}
+const createComment = ({ fk_usuario, fk_post, contenido }) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "INSERT INTO tbi_comentarios (fk_usuario, fk_post, contenido, fecha_publicacion) values (?,?,?,?)",
+      [fk_usuario, fk_post, contenido, new Date()],
+      (err, result) => {
+        if (err) reject(err);
+        resolve(result);
+      }
+    );
+  });
+};
 
-const deleteComment =({id,fk_usuario,fk_post})=>{
-  console.log('Paso por delete')
-  return new Promise((resolve,reject)=>{
-    db.query("DELETE FROM tbi_comentarios WHERE id=? AND fk_usuario=? AND fk_post=?",[id,fk_usuario,fk_post],(err,result)=>{
-      if(err) reject(err);
-      resolve(result);
-    });
-  })
-}
-
-
+const deleteComment = ({ id, fk_usuario, fk_post }) => {
+  console.log("Paso por delete");
+  return new Promise((resolve, reject) => {
+    db.query(
+      "DELETE FROM tbi_comentarios WHERE id=? AND fk_usuario=? AND fk_post=?",
+      [id, fk_usuario, fk_post],
+      (err, result) => {
+        if (err) reject(err);
+        resolve(result);
+      }
+    );
+  });
+};
 
 //Crear un post
 // [X] Necesita fk_ancestro
@@ -291,14 +309,15 @@ module.exports = {
   getCovers: getCovers,
   countChildren: countChildren,
   findChildren: findChildren,
+  getFather: getFather,
   getLikes: getLikes,
-  updateLikes:updateLikes,
+  updateLikes: updateLikes,
   searchLike: searchLike,
   insertLike: insertLike,
   updateLike: updateLike,
-  getComments:getComments,
-  createComment:createComment,
-  deleteComment:deleteComment,
+  getComments: getComments,
+  createComment: createComment,
+  deleteComment: deleteComment,
   create: create,
   putAncestro: putAncestro
 };

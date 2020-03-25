@@ -63,6 +63,22 @@ router.post("/children", async (req, res) => {
   }
 });
 
+router.post("/ancestors", async (req, res) => {
+  let arr = new Array();
+  let id = req.body.id
+  try {
+    do {
+      const rows = await Post.getFather(id);
+      arr.push(rows[0])
+      id=rows[0].fk_id_anterior;
+    } while (id != null);
+    console.log(arr);
+    res.json(arr);
+  } catch (err) {
+    res.json(err);
+  }
+});
+
 // POST http://localhost:3000/api/posts/likes
 router.post("/likes", async (req, res) => {
   try {
@@ -81,7 +97,7 @@ router.post("/likes", async (req, res) => {
 router.post("/comments", async (req, res) => {
   try {
     const result = await Post.getComments(req.body);
-    if (result.length >=1 ) {
+    if (result.length >= 1) {
       res.json(result);
     } else {
       res.json({ warning: "Post sin comentarios" });
@@ -90,11 +106,6 @@ router.post("/comments", async (req, res) => {
     res.json(err);
   }
 });
-
-
-
-
-
 
 /* **************************************************************************
 /                   ¡¡¡ACCIONES QUE REQUIEREN LOGIN!!!!                     /
@@ -124,7 +135,7 @@ router.post("/checklike", async (req, res) => {
     const searchLike = await Post.searchLike(req.body);
     console.log(searchLike);
     if (searchLike.length === 0) {
-      res.json({activo:false});
+      res.json({ activo: false });
     } else if (searchLike[0].activo === "inactivo") {
       res.json({ activo: false });
     } else if (searchLike[0].activo === "activo") {
@@ -139,22 +150,26 @@ router.post("/checklike", async (req, res) => {
 // Proceso que añade un like a un post. Si la relación ya existía la actualiza a like activo o inactivo
 router.put("/likes", async (req, res) => {
   try {
-   const searchLike= await Post.searchLike(req.body);
-   if(searchLike.length===0){
-    await Post.insertLike(req.body);
-    const updateLikes = await Post.updateLikes(req.body,{activo:'activo'})
-    res.json(updateLikes)
-
-   }else if(searchLike[0].activo==='activo'){
-     await Post.updateLike({id:searchLike[0].id,activo:'inactivo'});
-     const updateLikes = await Post.updateLikes(req.body, { activo: 'inactivo' });
-     res.json(updateLikes);
-
-   }else if(searchLike[0].activo==='inactivo'){
-    await Post.updateLike({id:searchLike[0].id,activo: 'activo'});
-     const updateLikes = await Post.updateLikes(req.body, { activo: 'activo' });
-     res.json(updateLikes);
-   }
+    const searchLike = await Post.searchLike(req.body);
+    if (searchLike.length === 0) {
+      await Post.insertLike(req.body);
+      const updateLikes = await Post.updateLikes(req.body, {
+        activo: "activo"
+      });
+      res.json(updateLikes);
+    } else if (searchLike[0].activo === "activo") {
+      await Post.updateLike({ id: searchLike[0].id, activo: "inactivo" });
+      const updateLikes = await Post.updateLikes(req.body, {
+        activo: "inactivo"
+      });
+      res.json(updateLikes);
+    } else if (searchLike[0].activo === "inactivo") {
+      await Post.updateLike({ id: searchLike[0].id, activo: "activo" });
+      const updateLikes = await Post.updateLikes(req.body, {
+        activo: "activo"
+      });
+      res.json(updateLikes);
+    }
   } catch (err) {
     res.json(err);
   }
@@ -172,7 +187,7 @@ router.post("/comments/create", async (req, res) => {
 
 // POST http://localhost:3000/api/posts/comments/create
 router.delete("/comments/delete", async (req, res) => {
-  console.log('paso por api delete')
+  console.log("paso por api delete");
   console.log(req.body);
   try {
     const result = await Post.deleteComment(req.body);
