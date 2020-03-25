@@ -65,9 +65,8 @@ router.post("/children", async (req, res) => {
 
 router.post("/ancestors", async (req, res) => {
   let arr = new Array();
-  let id = req.body.id;
+  let id = req.body.fk_id_anterior;
   let limit = parseInt(req.body.limit);
-  console.log(limit);
   try {
     let i = 0;
     do {
@@ -76,10 +75,9 @@ router.post("/ancestors", async (req, res) => {
       id = rows[0].fk_id_anterior;
       if (limit != undefined || limit != null) {
         i++;
-        console.log(i);
-        
       }
     } while (id != null && i < limit);
+    arr.reverse();
     res.json(arr);
   } catch (err) {
     res.json(err);
