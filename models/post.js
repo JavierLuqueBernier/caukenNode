@@ -95,7 +95,7 @@ const findChildren = ({ id, likes, limit, offset, usuario }) => {
 const getFather = id => {
   return new Promise((resolve, reject) => {
     db.query(
-      "SELECT * FROM posts WHERE id = ?",
+      "SELECT id, titulo, imagen, fk_id_anterior FROM posts WHERE id = ?",
       [id],
       (err, rows) => {
         if (err) reject(err);

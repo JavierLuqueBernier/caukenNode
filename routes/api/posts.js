@@ -65,14 +65,21 @@ router.post("/children", async (req, res) => {
 
 router.post("/ancestors", async (req, res) => {
   let arr = new Array();
-  let id = req.body.id
+  let id = req.body.id;
+  let limit = parseInt(req.body.limit);
+  console.log(limit);
   try {
+    let i = 0;
     do {
       const rows = await Post.getFather(id);
-      arr.push(rows[0])
-      id=rows[0].fk_id_anterior;
-    } while (id != null);
-    console.log(arr);
+      arr.push(rows[0]);
+      id = rows[0].fk_id_anterior;
+      if (limit != undefined || limit != null) {
+        i++;
+        console.log(i);
+        
+      }
+    } while (id != null && i < limit);
     res.json(arr);
   } catch (err) {
     res.json(err);
