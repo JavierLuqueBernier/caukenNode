@@ -112,6 +112,16 @@ router.post("/comments", async (req, res) => {
   }
 });
 
+// POST http://localhost:3000/api/posts
+router.post("/getbylocation", async (req, res) => {
+  try {
+    const rows = await Post.getByLocation(req.body);
+    res.json(rows);
+  } catch (err) {
+    res.json(err);
+  }
+})
+
 /* **************************************************************************
 /                   ¡¡¡ACCIONES QUE REQUIEREN LOGIN!!!!                     /
 ****************************************************************************/
