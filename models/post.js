@@ -1,3 +1,7 @@
+/* import { 
+  toLatLon, toLatitudeLongitude, headingDistanceTo, moveTo, insidePolygon 
+} from 'geolocation-utils' */
+
 const getAll = () => {
   return new Promise((resolve, reject) => {
     db.query("select * from posts", (err, rows) => {
@@ -303,6 +307,25 @@ const putAncestro = id => {
   });
 };
 
+const getByLocation = (latitud, longitud, distance = 5, fk_id_anterior) => {
+  return new Promise((resolve, reject) => {
+    latitud = parseInt(latitud);
+    longitud = parseInt(longitud);
+      let pos0 = geoutils.moveTo({ latitud: latitud, longitud: longitud }, { heading: 0, distance: distance })
+      let pos90 = geoutils.moveTo({ latitud: latitud, longitud: longitud }, { heading: 90, distance: distance })
+      let pos180 = geoutils.moveTo({ latitud: latitud, longitud: longitud }, { heading: 180, distance: distance })
+      let pos270 = geoutils.moveTo({ latitud: latitud, longitud: longitud }, { heading: 270, distance: distance })
+      console.log('hola')
+      connect((pool) => {
+          pool.query('select * from cauken.posts where latitud < ? and latitud > ? and longitud > ? and longitud < ? AND fk_id_anterior = ? ;', [pos0.latitud, pos180.latitud, pos270.longitud, pos90.longitud, fk_id_anterior],
+              (err, rows) => {
+                  if (err) reject(err);
+                  resolve(rows);
+              });
+      });
+  });
+};
+
 module.exports = {
   getAll: getAll,
   getById: getById,
@@ -319,5 +342,6 @@ module.exports = {
   createComment: createComment,
   deleteComment: deleteComment,
   create: create,
-  putAncestro: putAncestro
+  putAncestro: putAncestro,
+  getByLocation: getByLocation
 };
