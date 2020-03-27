@@ -115,7 +115,7 @@ router.post("/comments", async (req, res) => {
 // POST http://localhost:3000/api/posts
 router.post("/getbylocation", async (req, res) => {
   try {
-    const rows = await Post.getByLocation(req.body);
+    const rows = await Post.getByLocation(req.body.latitud, req.body.longitud, req.body.fk_id_anterior);
     res.json(rows);
   } catch (err) {
     res.json(err);

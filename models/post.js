@@ -305,19 +305,19 @@ const putAncestro = id => {
   });
 };
 
-const getByLocation = (lat, lon, fk_id_anterior, distance = 5) => {
+const getByLocation = (latitud, longitud, fk_id_anterior, distance = 5) => {
+  let lat = parseFloat(latitud)
+  let lon = parseFloat(longitud)
   return new Promise((resolve, reject) => {
-      let pos0 = geoutils.moveTo({ lat: lat, lon: lon }, { heading: 0, distance: distance })
-      let pos90 = geoutils.moveTo({ lat: lat, lon: lon }, { heading: 90, distance: distance })
-      let pos180 = geoutils.moveTo({ lat: lat, lon: lon }, { heading: 180, distance: distance })
-      let pos270 = geoutils.moveTo({ lat: lat, lon: lon }, { heading: 270, distance: distance })
-      console.log('hola')
-      connect((pool) => {
-          pool.query('select * from cauken.posts where latitud < ? and latitud > ? and longitud > ? and longitud < ? AND fk_id_anterior = ? ;', [pos0.lat, pos180.lat, pos270.lon, pos90.lon, fk_id_anterior],
-              (err, rows) => {
-                  if (err) reject(err);
-                  resolve(rows);
-              });
+    let pos0 = geoutils.moveTo({ lat: lat, lon: lon }, { heading: 0, distance: distance })
+    let pos90 = geoutils.moveTo({ lat: lat, lon: lon }, { heading: 90, distance: distance })
+    let pos180 = geoutils.moveTo({ lat: lat, lon: lon }, { heading: 180, distance: distance })
+    let pos270 = geoutils.moveTo({ lat: lat, lon: lon }, { heading: 270, distance: distance })
+    console.log(pos0)
+    db.query('select * from cauken.posts where latitud < ? and latitud > ? and longitud > ? and longitud < ? AND fk_id_anterior = ? ;', [pos0.lat, pos180.lat, pos270.lon, pos90.lon, fk_id_anterior],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
       });
   });
 };
