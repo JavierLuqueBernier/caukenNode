@@ -9,7 +9,7 @@ const getAll = () => {
 
 const getById = pPostId => {
   return new Promise((resolve, reject) => {
-    db.query("select * from posts where id = ?", [pPostId], (err, rows) => {
+    db.query("select * from posts where id = ? AND publico='publico'", [pPostId], (err, rows) => {
       if (err) reject(err);
       if (rows.lenght === 0) {
         resolve(null);
@@ -48,6 +48,18 @@ const getCovers = ({ likes, limit, offset, usuario }) => {
     );
   });
 };
+
+const findBy =({word})=>{
+  return new Promise((resolve,reject)=>{
+console.log(word)
+word=`%${word}%`
+    db.query(`SELECT posts.id, posts.titulo,posts.imagen,posts.likes,posts.fk_usuario,posts.fecha_publicacion FROM posts WHERE titulo LIKE ? OR contenido LIKE ?`,[word, word],(err,rows)=>{
+      if(err) reject(err);
+      resolve(rows);
+    })
+  })
+
+}
 
 //Cuenta el número de posts hijos de un post
 const countChildren = id => {
@@ -307,6 +319,7 @@ module.exports = {
   getAll: getAll,
   getById: getById,
   getCovers: getCovers,
+  findBy: findBy,
   countChildren: countChildren,
   findChildren: findChildren,
   getFather: getFather,
