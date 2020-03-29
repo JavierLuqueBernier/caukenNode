@@ -11,13 +11,17 @@ const getAll = () => {
 
 const getById = pPostId => {
   return new Promise((resolve, reject) => {
-    db.query("select * from posts where id = ?", [pPostId], (err, rows) => {
-      if (err) reject(err);
-      if (rows.lenght === 0) {
-        resolve(null);
+    db.query(
+      "select * from posts where id = ? AND publico='publico'",
+      [pPostId],
+      (err, rows) => {
+        if (err) reject(err);
+        if (rows.lenght === 0) {
+          resolve(null);
+        }
+        resolve(rows[0]);
       }
-      resolve(rows[0]);
-    });
+    );
   });
 };
 
@@ -50,6 +54,96 @@ const getCovers = ({ likes, limit, offset, usuario }) => {
     );
   });
 };
+
+
+const findBy = ({ word, titulo, contenido }) => {
+  return new Promise((resolve, reject) => {
+    titulo = Boolean(titulo);
+    contenido = Boolean(contenido);
+    word = `'%${word}%'`;
+    console.log(titulo);
+    let search = "";
+    let usedOne = false;
+
+    if (titulo === true) {
+      console.log("paso por aquí");
+       search += `posts.titulo LIKE ${word}`;
+      usedOne = true;
+    }
+    if (contenido === true) {
+      search += usedOne ? " OR " : "";
+      search += `posts.contenido LIKE ${word}`;
+    }
+    if (
+      (titulo === null || titulo === false) &&
+      (contenido === null || contenido === false)
+    ) {
+      search = `posts.titulo LIKE ${word} OR posts.contenido LIKE ${word}`;
+    }
+
+    db.query(
+      `SELECT posts.id, posts.titulo,posts.imagen,posts.likes,posts.fk_usuario,posts.fecha_publicacion FROM posts WHERE ${search}`,
+      [],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    );
+  });
+};
+
+/* ESTO ES UN INTENTO DE MEJORAR LO DE ARRIBA. NO FUNCIONA
+const findBy = ({ word, usuario, titulo, categoria, contenido }) => {
+  return new Promise((resolve, reject) => {
+    titulo = Boolean(titulo);
+    contenido = Boolean(contenido);
+    categoria = Boolean(categoria);
+    usuario = Boolean(usuario);
+    word = `'%${word}%'`;
+    console.log(titulo);
+    let search = "";
+    let usedOne = false;
+    if (usuario === true) {
+      search += `usuarios.nombre LIKE ${word}`;
+      usedOne = true;
+    }
+    if (titulo === true) {
+      console.log('paso por aquí')
+      search += usedOne ? " OR " : "";
+      search += `posts.titulo LIKE ${word}`;
+      usedOne = true;
+    }
+    if (categoria === true) {
+      search += usedOne ? " OR " : "";
+      search += `tbi_categorias.nombre LIKE ${word}`;
+      usedOne = true;
+    }
+
+    if (contenido === true) {
+      search += usedOne ? " OR " : "";
+      search += `posts.contenido LIKE ${word}`;
+    }
+    if (
+      (usuario === null || usuario === false) &&
+      (titulo === null || titulo === false) &&
+      (categoria === null || categoria === false) &&
+      (contenido === null || contenido === false)
+    ) {
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        search = `posts.titulo LIKE ${word} OR posts.contenido LIKE ${word}`;
+        search = `titulo LIKE ${word} OR contenido LIKE ${word} OR categoria LIKE ${word} OR usuario LIKE ${word}`;
+      }
+    
+    db.query(
+      `SELECT posts.id, posts.titulo,posts.imagen,posts.likes,posts.fk_usuario,posts.fecha_publicacion,tbi_categorias.nombre, usuarios.nombre FROM posts JOIN tbi_categorias JOIN usuarios WHERE ${search}`,
+      [],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    );
+  });
+};*/
 
 //Cuenta el número de posts hijos de un post
 const countChildren = id => {
@@ -326,6 +420,7 @@ module.exports = {
   getAll: getAll,
   getById: getById,
   getCovers: getCovers,
+  findBy: findBy,
   countChildren: countChildren,
   findChildren: findChildren,
   getFather: getFather,

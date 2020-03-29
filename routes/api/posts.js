@@ -101,6 +101,7 @@ router.post("/likes", async (req, res) => {
 // POST http://localhost:3000/api/posts/comments
 router.post("/comments", async (req, res) => {
   try {
+    console.log(req.body)
     const result = await Post.getComments(req.body);
     if (result.length >= 1) {
       res.json(result);
@@ -117,6 +118,19 @@ router.post("/getbylocation", async (req, res) => {
   try {
     const rows = await Post.getByLocation(req.body.latitud, req.body.longitud, req.body.fk_id_anterior);
     res.json(rows);
+ } catch (err) {
+    res.json(err);
+  }
+})
+
+router.post("/find", async (req,res)=>{
+  try {
+    const rows = await Post.findBy(req.body);
+    if (rows.length >= 1) {
+      res.json(rows);
+    } else {
+      res.json({ warning: "No hay coindicencias" });
+    }
   } catch (err) {
     res.json(err);
   }
