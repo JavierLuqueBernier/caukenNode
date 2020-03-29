@@ -9,19 +9,19 @@ const getAll = () => {
 
 const getById = pUserId => {
     return new Promise((resolve, reject) => {
-      db.query("select * from users where id = ?", [pUserId], (err, rows) => {
-        if (err) reject(err);
-        if (rows.lenght === 0) {
-          resolve(null);
-        }
-        resolve(rows[0]);
-      });
+        db.query("select * from users where id = ?", [pUserId], (err, rows) => {
+            if (err) reject(err);
+            if (rows.lenght === 0) {
+                resolve(null);
+            }
+            resolve(rows[0]);
+        });
     });
-  };
+};
 
 const emailOrUserExists = (pEmail, pUser) => {
     return new Promise((resolve, reject) => {
-        db.query('select * from usuarios where email = ? or nombre = ?' , [pEmail, pUser], (err, rows) => {
+        db.query('select * from usuarios where email = ? or nombre = ?', [pEmail, pUser], (err, rows) => {
             if (err) return reject(err);
             if (rows.length === 0) return resolve(null);
             resolve(rows[0]);
@@ -39,17 +39,17 @@ const userExists = (pUser) => {
     });
 }
 
-const create = ({nombre, password, email}) => {
-    return new Promise((resolve, reject) => { 
+const create = ({ nombre, password, email, biografia, imagen_perfil }) => {
+    return new Promise((resolve, reject) => {
         const activo = 'activo';
         const premium = 'free';
         const reputacion = 10;
-        db.query('INSERT INTO usuarios (nombre, password, email, activo, premium, fecha_alta, reputacion) values (?,?,?,?,?,?,?)',
-         [nombre, password, email, activo, premium, new Date(), reputacion], 
-         (err, result) => {
-             if (err) reject(err);
-             resolve(result);
-         })
+        db.query('INSERT INTO usuarios (nombre, password, email, activo, premium, fecha_alta, reputacion, biografia, imagen_perfil) values (?,?,?,?,?,?,?,?,?)',
+            [nombre, password, email, activo, premium, new Date(), reputacion, biografia, imagen_perfil],
+            (err, result) => {
+                if (err) reject(err);
+                resolve(result);
+            })
     });
 }
 
