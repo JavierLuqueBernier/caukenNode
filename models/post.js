@@ -330,7 +330,7 @@ const getByUser =({id})=>{
   const publicoCondicion=' AND publico="publico"';
 return new Promise((resolve,reject)=>{
   db.query(
-    `SELECT * FROM posts WHERE fk_usuario = ? ${publicoCondicion}`,
+    `SELECT * FROM posts WHERE fk_usuario = ? ${publicoCondicion} ORDER BY fecha_publicacion DESC`,
     [id],
     (err,result)=>{
       if(err) reject(err);
@@ -345,7 +345,7 @@ const getPrivateByUser = ({ id }) => {
   const privadoCondicion = ' AND publico="privado"';
   return new Promise((resolve, reject) => {
     db.query(
-      `SELECT * FROM posts WHERE fk_usuario = ? ${privadoCondicion}`,
+      `SELECT * FROM posts WHERE fk_usuario = ? ${privadoCondicion} ORDER BY fecha_publicacion DESC`,
       [id],
       (err, result) => {
         if (err) reject(err);
