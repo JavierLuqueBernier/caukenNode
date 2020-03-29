@@ -9,13 +9,17 @@ const getAll = () => {
 
 const getById = pPostId => {
   return new Promise((resolve, reject) => {
-    db.query("select * from posts where id = ? AND publico='publico'", [pPostId], (err, rows) => {
-      if (err) reject(err);
-      if (rows.lenght === 0) {
-        resolve(null);
+    db.query(
+      "select * from posts where id = ? AND publico='publico'",
+      [pPostId],
+      (err, rows) => {
+        if (err) reject(err);
+        if (rows.lenght === 0) {
+          resolve(null);
+        }
+        resolve(rows[0]);
       }
-      resolve(rows[0]);
-    });
+    );
   });
 };
 
@@ -49,19 +53,44 @@ const getCovers = ({ likes, limit, offset, usuario }) => {
   });
 };
 
-const findBy =({word})=>{
-  return new Promise((resolve,reject)=>{
-console.log(word)
-word=`%${word}%`
-    db.query(`SELECT posts.id, posts.titulo,posts.imagen,posts.likes,posts.fk_usuario,posts.fecha_publicacion FROM posts WHERE titulo LIKE ? OR contenido LIKE ?`,[word, word],(err,rows)=>{
-      if(err) reject(err);
-      resolve(rows);
-    })
-  })
 
-}
+const findBy = ({ word, titulo, contenido }) => {
+  return new Promise((resolve, reject) => {
+    titulo = Boolean(titulo);
+    contenido = Boolean(contenido);
+    word = `'%${word}%'`;
+    console.log(titulo);
+    let search = "";
+    let usedOne = false;
 
-/* 
+    if (titulo === true) {
+      console.log("paso por aquí");
+       search += `posts.titulo LIKE ${word}`;
+      usedOne = true;
+    }
+    if (contenido === true) {
+      search += usedOne ? " OR " : "";
+      search += `posts.contenido LIKE ${word}`;
+    }
+    if (
+      (titulo === null || titulo === false) &&
+      (contenido === null || contenido === false)
+    ) {
+      search = `posts.titulo LIKE ${word} OR posts.contenido LIKE ${word}`;
+    }
+
+    db.query(
+      `SELECT posts.id, posts.titulo,posts.imagen,posts.likes,posts.fk_usuario,posts.fecha_publicacion FROM posts WHERE ${search}`,
+      [],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    );
+  });
+};
+
+/* ESTO ES UN INTENTO DE MEJORAR LO DE ARRIBA. NO FUNCIONA
 const findBy = ({ word, usuario, titulo, categoria, contenido }) => {
   return new Promise((resolve, reject) => {
     titulo = Boolean(titulo);
@@ -113,7 +142,6 @@ const findBy = ({ word, usuario, titulo, categoria, contenido }) => {
     );
   });
 };*/
-
 
 //Cuenta el número de posts hijos de un post
 const countChildren = id => {
