@@ -101,7 +101,7 @@ router.post("/likes", async (req, res) => {
 // POST http://localhost:3000/api/posts/comments
 router.post("/comments", async (req, res) => {
   try {
-    console.log(req.body)
+    console.log(req.body);
     const result = await Post.getComments(req.body);
     if (result.length >= 1) {
       res.json(result);
@@ -116,14 +116,18 @@ router.post("/comments", async (req, res) => {
 // POST http://localhost:3000/api/posts
 router.post("/getbylocation", async (req, res) => {
   try {
-    const rows = await Post.getByLocation(req.body.latitud, req.body.longitud, req.body.fk_id_anterior);
+    const rows = await Post.getByLocation(
+      req.body.latitud,
+      req.body.longitud,
+      req.body.fk_id_anterior
+    );
     res.json(rows);
- } catch (err) {
+  } catch (err) {
     res.json(err);
   }
-})
+});
 
-router.post("/find", async (req,res)=>{
+router.post("/find", async (req, res) => {
   try {
     const rows = await Post.findBy(req.body);
     if (rows.length >= 1) {
@@ -134,7 +138,20 @@ router.post("/find", async (req,res)=>{
   } catch (err) {
     res.json(err);
   }
-})
+});
+
+router.post("/getbyuser", async (req, res) => {
+  try {
+    const rows = await Post.getByUser(req.body);
+    if (rows.length >= 1) {
+      res.json(rows);
+    } else {
+      res.json({ warning: "No tienes nada todavía" });
+    }
+  } catch (err) {
+    res.json(err);
+  }
+});
 
 /* **************************************************************************
 /                   ¡¡¡ACCIONES QUE REQUIEREN LOGIN!!!!                     /
@@ -221,6 +238,22 @@ router.delete("/comments/delete", async (req, res) => {
   try {
     const result = await Post.deleteComment(req.body);
     res.json(result);
+  } catch (err) {
+    res.json(err);
+  }
+});
+
+router.post("/privatebyuser", async (req, res) => {
+  if (req.body.userid != req.body.id) {
+    res.json({errors: "prohibido"});
+  }
+  try {
+    const rows = await Post.getPrivateByUser(req.body);
+    if (rows.length >= 1) {
+      res.json(rows);
+    } else {
+      res.json({ warning: "No tienes nada todavía" });
+    }
   } catch (err) {
     res.json(err);
   }

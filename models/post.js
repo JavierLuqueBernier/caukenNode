@@ -324,6 +324,37 @@ const deleteComment = ({ id, fk_usuario, fk_post }) => {
   });
 };
 
+//Separo getByUser de getPrivateByuser por seguridad y para implementar más fácilmente con los middlewares de login
+//Obtiene posts públicos de un usuario
+const getByUser =({id})=>{
+  const publicoCondicion=' AND publico="publico"';
+return new Promise((resolve,reject)=>{
+  db.query(
+    `SELECT * FROM posts WHERE fk_usuario = ? ${publicoCondicion}`,
+    [id],
+    (err,result)=>{
+      if(err) reject(err);
+      resolve(result);
+    }
+  )
+})
+}
+
+//Obtiene posts privados de un usuario
+const getPrivateByUser = ({ id }) => {
+  const privadoCondicion = ' AND publico="privado"';
+  return new Promise((resolve, reject) => {
+    db.query(
+      `SELECT * FROM posts WHERE fk_usuario = ? ${privadoCondicion}`,
+      [id],
+      (err, result) => {
+        if (err) reject(err);
+        resolve(result);
+      }
+    );
+  });
+};
+
 //Crear un post
 // [X] Necesita fk_ancestro
 // [ ] Necesita validadores de longitud
@@ -432,6 +463,8 @@ module.exports = {
   getComments: getComments,
   createComment: createComment,
   deleteComment: deleteComment,
+  getByUser:getByUser,
+  getPrivateByUser:getPrivateByUser,
   create: create,
   putAncestro: putAncestro,
   getByLocation: getByLocation
