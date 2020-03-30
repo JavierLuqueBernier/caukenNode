@@ -12,7 +12,7 @@ const getAll = () => {
 const getById = pPostId => {
   return new Promise((resolve, reject) => {
     db.query(
-      "select * from posts where id = ? AND publico='publico'",
+      "SELECT posts.id,posts.titulo,posts.imagen,posts.likes,posts.fk_usuario, posts.fecha_publicacion, posts.contenido, posts.fk_id_anterior,usuarios.nombre,usuarios.imagen_perfil FROM posts, usuarios WHERE fk_usuario = usuarios.id AND posts.id=? AND publico='publico'",
       [pPostId],
       (err, rows) => {
         if (err) reject(err);
