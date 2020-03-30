@@ -12,7 +12,7 @@ const getAll = () => {
 const getById = pPostId => {
   return new Promise((resolve, reject) => {
     db.query(
-      "select * from posts where id = ? AND publico='publico'",
+      "SELECT posts.id,posts.titulo,posts.imagen,posts.likes,posts.fk_usuario, posts.fecha_publicacion, posts.contenido, posts.fk_id_anterior,usuarios.nombre,usuarios.imagen_perfil FROM posts, usuarios WHERE fk_usuario = usuarios.id AND posts.id=? AND publico='publico'",
       [pPostId],
       (err, rows) => {
         if (err) reject(err);
@@ -67,7 +67,7 @@ const findBy = ({ word, titulo, contenido }) => {
 
     if (titulo === true) {
       console.log("paso por aquí");
-       search += `posts.titulo LIKE ${word}`;
+      search += `posts.titulo LIKE ${word}`;
       usedOne = true;
     }
     if (contenido === true) {
@@ -326,18 +326,18 @@ const deleteComment = ({ id, fk_usuario, fk_post }) => {
 
 //Separo getByUser de getPrivateByuser por seguridad y para implementar más fácilmente con los middlewares de login
 //Obtiene posts públicos de un usuario
-const getByUser =({id})=>{
-  const publicoCondicion=' AND publico="publico"';
-return new Promise((resolve,reject)=>{
-  db.query(
-    `SELECT * FROM posts WHERE fk_usuario = ? ${publicoCondicion} ORDER BY fecha_publicacion DESC`,
-    [id],
-    (err,result)=>{
-      if(err) reject(err);
-      resolve(result);
-    }
-  )
-})
+const getByUser = ({ id }) => {
+  const publicoCondicion = ' AND publico="publico"';
+  return new Promise((resolve, reject) => {
+    db.query(
+      `SELECT * FROM posts WHERE fk_usuario = ? ${publicoCondicion} ORDER BY fecha_publicacion DESC`,
+      [id],
+      (err, result) => {
+        if (err) reject(err);
+        resolve(result);
+      }
+    )
+  })
 }
 
 //Obtiene posts privados de un usuario
@@ -384,7 +384,6 @@ const create = ({
       //si se cumple lo anterior, es decir, es un post inicial, le damos el primer valor a numero_autores y aseguramos que fk_id_anterior sea null. Puede que más adelante la segunda sentencia no sea necesaria
       numero_autores = 1;
       fk_id_anterior = null;
-      fk_ancestro = null;
     }
 
     //Para los valores latitud, longitud e imagen hay que hacer algo parecido, para que en SQL se graben como null y no como 0. Los pongo en ternario, que lo permiten y es más cómodo:
@@ -463,8 +462,8 @@ module.exports = {
   getComments: getComments,
   createComment: createComment,
   deleteComment: deleteComment,
-  getByUser:getByUser,
-  getPrivateByUser:getPrivateByUser,
+  getByUser: getByUser,
+  getPrivateByUser: getPrivateByUser,
   create: create,
   putAncestro: putAncestro,
   getByLocation: getByLocation

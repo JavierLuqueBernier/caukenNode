@@ -87,6 +87,16 @@ router.post('/checktoken', async (req, res) => {
     }
 })
 
+router.post('/getavatar', async (req,res)=>{
+    try{
+        console.log(req.body.id)
+        const rows= await User.getAvatar(req.body)
+        res.json(rows)
+    }catch(err){
+        return res.json({error:'Usuario no encontrado'})
+    }
+})
+
 const createToken = (pUser) => {
     const payload = {
         userid: pUser.id,
