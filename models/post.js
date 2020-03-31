@@ -61,7 +61,7 @@ const getCovers = ({ likes, limit, offset, usuario }) => {
         : `AND fk_usuario = ${usuario}`;
 
     db.query(
-      `SELECT id,titulo,imagen,likes,fk_usuario,fecha_publicacion FROM posts WHERE fk_id_anterior IS NULL AND LIKES >=? ${usuario} AND publico='publico' LIMIT ? OFFSET ?`,
+      `SELECT id,titulo,imagen,likes,fk_usuario,fecha_publicacion FROM posts WHERE fk_id_anterior IS NULL AND LIKES >=? ${usuario} AND publico='publico' ORDER BY likes DESC LIMIT ? OFFSET ?`,
       [parseInt(likes), parseInt(limit), parseInt(offset)],
       (err, rows) => {
         if (err) reject(err);
