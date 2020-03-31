@@ -450,7 +450,7 @@ const create = ({
       console.log("dfsjhsfdjhgsdjhfgkdsjhfkfdsljh");
 
       const obtieneAncestro = await getByIdAdmin(fk_ancestro);
-      imagen = obtieneAncestro.imagen;
+      imagen = obtieneAncestro.imagen===null?null:obtieneAncestro.imagen;
  
     }
 
