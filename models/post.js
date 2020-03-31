@@ -1,4 +1,4 @@
-const geoutils = require('geolocation-utils');
+const geoutils = require("geolocation-utils");
 
 const getAll = () => {
   return new Promise((resolve, reject) => {
@@ -12,7 +12,23 @@ const getAll = () => {
 const getById = pPostId => {
   return new Promise((resolve, reject) => {
     db.query(
-      "SELECT posts.id,posts.titulo,posts.imagen,posts.likes,posts.fk_usuario, posts.fecha_publicacion, posts.contenido, posts.fk_id_anterior,usuarios.nombre,usuarios.imagen_perfil FROM posts, usuarios WHERE fk_usuario = usuarios.id AND posts.id=? AND publico='publico'",
+      "SELECT posts.id,posts.titulo,posts.imagen,posts.likes,posts.fk_usuario, posts.fecha_publicacion, posts.contenido, posts.fk_id_anterior,posts.fk_ancestro,usuarios.nombre,usuarios.imagen_perfil FROM posts, usuarios WHERE fk_usuario = usuarios.id AND posts.id=? AND publico='publico'",
+      [pPostId],
+      (err, rows) => {
+        if (err) reject(err);
+        if (rows.lenght === 0) {
+          resolve(null);
+        }
+        resolve(rows[0]);
+      }
+    );
+  });
+};
+
+const getByIdAdmin = pPostId => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "SELECT posts.id,posts.titulo,posts.imagen,posts.likes,posts.fk_usuario, posts.fecha_publicacion, posts.contenido, posts.fk_id_anterior,posts.fk_ancestro,usuarios.nombre,usuarios.imagen_perfil FROM posts, usuarios WHERE fk_usuario = usuarios.id AND posts.id=? AND publico='publico'",
       [pPostId],
       (err, rows) => {
         if (err) reject(err);
@@ -54,7 +70,6 @@ const getCovers = ({ likes, limit, offset, usuario }) => {
     );
   });
 };
-
 
 const findBy = ({ word, titulo, contenido }) => {
   return new Promise((resolve, reject) => {
@@ -178,11 +193,39 @@ const findChildren = ({ id, likes, limit, offset, usuario }) => {
         ? ""
         : `AND fk_usuario = ${usuario}`;
     db.query(
-      `SELECT posts.id,posts.titulo,posts.imagen,posts.likes,posts.fk_usuario, posts.fecha_publicacion, usuarios.nombre FROM posts, usuarios WHERE fk_usuario = usuarios.id and fk_id_anterior = ? AND LIKES >=? AND posts.publico='publico' ${usuario} LIMIT ? OFFSET ?`,
+      `SELECT posts.id,posts.titulo,posts.imagen,posts.likes,posts.fk_usuario, posts.fecha_publicacion, usuarios.nombre FROM posts, usuarios WHERE fk_usuario = usuarios.id and fk_id_anterior = ? AND LIKES >=? AND posts.publico='publico' ${usuario} ORDER BY posts.fecha_publicacion DESC LIMIT ? OFFSET ?`,
       [parseInt(id), parseInt(likes), parseInt(limit), parseInt(offset)],
       (err, rows) => {
         if (err) reject(err);
         resolve(rows);
+      }
+    );
+  });
+};
+
+const findMostLikedChild = ({ id, likes, limit, offset, usuario }) => {
+  return new Promise((resolve, reject) => {
+    //Si no hay valor de likes se le da el valor 0
+    likes = likes === null || likes === undefined || likes === "" ? 0 : likes;
+    //si no se especifica límite o sobrepasa un máximo se asigna 10
+    limit =
+      limit === null || limit === undefined || limit === "" || limit > 10
+        ? 10
+        : limit;
+    //si no se especifica límitese asigna 0
+    offset =
+      offset === null || offset === undefined || offset === "" ? 0 : offset;
+    usuario =
+      usuario === null || usuario === undefined || usuario === ""
+        ? ""
+        : `AND fk_usuario = ${usuario}`;
+    db.query(
+      `SELECT posts.id,posts.titulo,posts.imagen,posts.likes,posts.fk_usuario, posts.fecha_publicacion, usuarios.nombre FROM posts, usuarios WHERE  fk_id_anterior = ?  AND posts.publico='publico' AND posts.likes=(SELECT MAX(posts.likes) FROM posts WHERE posts.fk_id_anterior=?) AND fk_usuario = usuarios.id`,
+      [parseInt(id), parseInt(id)],
+      (err, rows) => {
+        if (err) reject(err);
+        console.log(rows);
+        resolve(rows[0]);
       }
     );
   });
@@ -336,9 +379,9 @@ const getByUser = ({ id }) => {
         if (err) reject(err);
         resolve(result);
       }
-    )
-  })
-}
+    );
+  });
+};
 
 //Obtiene posts privados de un usuario
 const getPrivateByUser = ({ id }) => {
@@ -371,7 +414,7 @@ const create = ({
   fk_usuario,
   fk_ancestro
 }) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     //Partimos de poner el número de autores en null como si todos los posts fueran intermedios
     let numero_autores = null;
     //Como todavía no sabemos como vamos a recibir los datos del front, comprobamos las cuatro posibilidades del valor fk_id_anterior. Además nos aseguramos que aunque no lleguen bien los datos,éstos se acomoden siempre al modelo de la tabla.
@@ -384,13 +427,32 @@ const create = ({
       //si se cumple lo anterior, es decir, es un post inicial, le damos el primer valor a numero_autores y aseguramos que fk_id_anterior sea null. Puede que más adelante la segunda sentencia no sea necesaria
       numero_autores = 1;
       fk_id_anterior = null;
+    } else {
+      const padre = await getByIdAdmin(fk_id_anterior);
+      fk_ancestro = padre.fk_ancestro;
+      console.log("id anterior");
+      console.log(fk_id_anterior);
+      console.log("ancestro");
+      console.log(fk_ancestro);
+      console.log("padre");
+      console.log(padre);
     }
 
     //Para los valores latitud, longitud e imagen hay que hacer algo parecido, para que en SQL se graben como null y no como 0. Los pongo en ternario, que lo permiten y es más cómodo:
 
-    imagen = imagen === "" || imagen === undefined ? null : imagen;
     latitud = latitud == 0 || latitud == undefined ? null : latitud;
     longitud = longitud == 0 || longitud == undefined ? null : longitud;
+
+    if (
+      (imagen === null || imagen === undefined || imagen === "") &&
+     fk_ancestro != null
+    ) {
+      console.log("dfsjhsfdjhgsdjhfgkdsjhfkfdsljh");
+
+      const obtieneAncestro = await getByIdAdmin(fk_ancestro);
+      imagen = obtieneAncestro.imagen===null?null:obtieneAncestro.imagen;
+ 
+    }
 
     db.query(
       "INSERT INTO posts (titulo, contenido, imagen, numero_autores, publico, colaborable, latitud, longitud, fecha_publicacion, fk_id_anterior, fk_usuario,fk_ancestro) values (?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -430,29 +492,46 @@ const putAncestro = id => {
 };
 
 const getByLocation = (latitud, longitud, fk_id_anterior, distance = 5) => {
-  let lat = parseFloat(latitud)
-  let lon = parseFloat(longitud)
+  let lat = parseFloat(latitud);
+  let lon = parseFloat(longitud);
   return new Promise((resolve, reject) => {
-    let pos0 = geoutils.moveTo({ lat: lat, lon: lon }, { heading: 0, distance: distance })
-    let pos90 = geoutils.moveTo({ lat: lat, lon: lon }, { heading: 90, distance: distance })
-    let pos180 = geoutils.moveTo({ lat: lat, lon: lon }, { heading: 180, distance: distance })
-    let pos270 = geoutils.moveTo({ lat: lat, lon: lon }, { heading: 270, distance: distance })
-    console.log(pos0)
-    db.query('select * from cauken.posts where latitud < ? and latitud > ? and longitud > ? and longitud < ? AND fk_id_anterior = ? ;', [pos0.lat, pos180.lat, pos270.lon, pos90.lon, fk_id_anterior],
+    let pos0 = geoutils.moveTo(
+      { lat: lat, lon: lon },
+      { heading: 0, distance: distance }
+    );
+    let pos90 = geoutils.moveTo(
+      { lat: lat, lon: lon },
+      { heading: 90, distance: distance }
+    );
+    let pos180 = geoutils.moveTo(
+      { lat: lat, lon: lon },
+      { heading: 180, distance: distance }
+    );
+    let pos270 = geoutils.moveTo(
+      { lat: lat, lon: lon },
+      { heading: 270, distance: distance }
+    );
+    console.log(pos0);
+    db.query(
+      "select * from cauken.posts where latitud < ? and latitud > ? and longitud > ? and longitud < ? AND fk_id_anterior = ? ;",
+      [pos0.lat, pos180.lat, pos270.lon, pos90.lon, fk_id_anterior],
       (err, rows) => {
         if (err) reject(err);
         resolve(rows);
-      });
+      }
+    );
   });
 };
 
 module.exports = {
   getAll: getAll,
   getById: getById,
+  getByIdAdmin: getByIdAdmin,
   getCovers: getCovers,
   findBy: findBy,
   countChildren: countChildren,
   findChildren: findChildren,
+  findMostLikedChild:findMostLikedChild,
   getFather: getFather,
   getLikes: getLikes,
   updateLikes: updateLikes,

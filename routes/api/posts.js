@@ -63,6 +63,28 @@ router.post("/children", async (req, res) => {
   }
 });
 
+router.post("/likedchild", async (req, res) => {
+  try {
+    // Se cuenta el número de hijos totales y si <=3 se ignoran el resto de parámetros
+    const countChildren = await Post.countChildren(req.body.id);
+    children = countChildren[0]["COUNT(*)"];
+    if (children <= 3) {
+      req.body.limit = null;
+      req.body.offset = null;
+      req.body.likes = null;
+      req.body.usuario = null;
+    }
+    const result = await Post.findMostLikedChild(req.body);
+    if (result) {
+      res.json(result);
+    } else {
+      res.json({ warning: "Este post no tiene continuación" });
+    }
+  } catch (err) {
+    res.json(err);
+  }
+});
+
 router.post("/ancestors", async (req, res) => {
   let arr = new Array();
   let id = req.body.fk_id_anterior;
@@ -162,6 +184,7 @@ router.use(middlewares.registerAction);
 // POST http://localhost:3000/api/posts
 router.post("/create", async (req, res) => {
   const result = await Post.create(req.body);
+  
   if (result["affectedRows"] === 1) {
     //si es un post inicial se actualiza su fk_ancestro a su propia id, la idea es que en el resto de casos la fk_ancestro sea igual a la de su padre y no tener que recorrer todo el árbol hasta el origen cada vez que se necesite.
     if (req.body.fk_ancestro === null) {
