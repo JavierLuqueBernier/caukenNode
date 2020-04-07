@@ -71,6 +71,34 @@ const getCovers = ({ likes, limit, offset, usuario }) => {
   });
 };
 
+const getCoversByDate = ({ likes, limit, offset, usuario }) => {
+  return new Promise((resolve, reject) => {
+    //Si no hay valor de likes se le da el valor 0
+    likes = likes === null || likes === undefined || likes === "" ? 0 : likes;
+    //si no se especifica límite o sobrepasa un máximo se asigna 10
+    limit =
+      limit === null || limit === undefined || limit === "" || limit > 10
+        ? 10
+        : limit;
+    //si no se especifica límitese asigna 0
+    offset =
+      offset === null || offset === undefined || offset === "" ? 0 : offset;
+    usuario =
+      usuario === null || usuario === undefined || usuario === ""
+        ? ""
+        : `AND fk_usuario = ${usuario}`;
+
+    db.query(
+      `SELECT id,titulo,imagen,likes,fk_usuario,fecha_publicacion FROM posts WHERE fk_id_anterior IS NULL AND LIKES >=? ${usuario} AND publico='publico' ORDER BY fecha_publicacion DESC LIMIT ? OFFSET ?`,
+      [parseInt(likes), parseInt(limit), parseInt(offset)],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    );
+  });
+};
+
 const findBy = ({ word, titulo, contenido }) => {
   return new Promise((resolve, reject) => {
     titulo = Boolean(titulo);
@@ -445,13 +473,20 @@ const create = ({
 
     if (
       (imagen === null || imagen === undefined || imagen === "") &&
-     fk_ancestro != null
+      fk_ancestro != null
     ) {
       console.log("dfsjhsfdjhgsdjhfgkdsjhfkfdsljh");
 
       const obtieneAncestro = await getByIdAdmin(fk_ancestro);
-      imagen = obtieneAncestro.imagen===null?null:obtieneAncestro.imagen;
- 
+      console.log("obtieneAncestro");
+      console.log(obtieneAncestro);
+      imagen =
+      obtieneAncestro===undefined||
+        obtieneAncestro.imagen === undefined ||
+        obtieneAncestro.imagen === null ||
+        !obtieneAncestro.imagen
+          ? null
+          : obtieneAncestro.imagen;
     }
 
     db.query(
@@ -528,10 +563,11 @@ module.exports = {
   getById: getById,
   getByIdAdmin: getByIdAdmin,
   getCovers: getCovers,
+  getCoversByDate: getCoversByDate,
   findBy: findBy,
   countChildren: countChildren,
   findChildren: findChildren,
-  findMostLikedChild:findMostLikedChild,
+  findMostLikedChild: findMostLikedChild,
   getFather: getFather,
   getLikes: getLikes,
   updateLikes: updateLikes,

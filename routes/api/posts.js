@@ -27,16 +27,31 @@ router.get("/:postId", async (req, res) => {
 // Devuelve un array con varias covers, se pasa opcionalmente por el body:
 //{limit:number,offset:number,likes:number,usuario:id} donde limit es la cantidad de covers y offset desde donde empieza. Si no hay filtro de likes da el valor 0 automáticamente. Si no hay autor se devuelven las covers de todos los autores.
 router.post("/covers", async (req, res) => {
-  try {
-    const rows = await Post.getCovers(req.body);
-    if (rows["length"] > 0) {
-      res.json(rows);
+    if (req.body.type) {
+      console.log("tipooooooooooooooooooooooo");
+       try {
+         const rows = await Post.getCoversByDate(req.body);
+         if (rows["length"] > 0) {
+           res.json(rows);
+         } else {
+           res.json({ error: "Covers de usuario no encontrado" });
+         }
+       } catch (err) {
+         res.json(err);
+       }
     } else {
-      res.json({ error: "Covers de usuario no encontrado" });
+       try {
+         const rows = await Post.getCovers(req.body);
+         if (rows["length"] > 0) {
+           res.json(rows);
+         } else {
+           res.json({ error: "Covers de usuario no encontrado" });
+         }
+       } catch (err) {
+         res.json(err);
+       }
     }
-  } catch (err) {
-    res.json(err);
-  }
+ 
 });
 
 // POST http://localhost:3000/api/posts/children
