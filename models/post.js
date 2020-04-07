@@ -481,7 +481,7 @@ const create = ({
       console.log("obtieneAncestro");
       console.log(obtieneAncestro);
       imagen =
-      obtieneAncestro===undefined||
+      obtieneAncestro===undefined||obtieneAncestro===null||
         obtieneAncestro.imagen === undefined ||
         obtieneAncestro.imagen === null ||
         !obtieneAncestro.imagen
@@ -507,6 +507,7 @@ const create = ({
       ],
       (err, result) => {
         if (err) reject(err);
+        console.log(result)
         resolve(result);
       }
     );

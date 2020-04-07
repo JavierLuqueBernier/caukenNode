@@ -27,31 +27,30 @@ router.get("/:postId", async (req, res) => {
 // Devuelve un array con varias covers, se pasa opcionalmente por el body:
 //{limit:number,offset:number,likes:number,usuario:id} donde limit es la cantidad de covers y offset desde donde empieza. Si no hay filtro de likes da el valor 0 automáticamente. Si no hay autor se devuelven las covers de todos los autores.
 router.post("/covers", async (req, res) => {
-    if (req.body.type) {
-      console.log("tipooooooooooooooooooooooo");
-       try {
-         const rows = await Post.getCoversByDate(req.body);
-         if (rows["length"] > 0) {
-           res.json(rows);
-         } else {
-           res.json({ error: "Covers de usuario no encontrado" });
-         }
-       } catch (err) {
-         res.json(err);
-       }
-    } else {
-       try {
-         const rows = await Post.getCovers(req.body);
-         if (rows["length"] > 0) {
-           res.json(rows);
-         } else {
-           res.json({ error: "Covers de usuario no encontrado" });
-         }
-       } catch (err) {
-         res.json(err);
-       }
+  if (req.body.type) {
+    console.log("tipooooooooooooooooooooooo");
+    try {
+      const rows = await Post.getCoversByDate(req.body);
+      if (rows["length"] > 0) {
+        res.json(rows);
+      } else {
+        res.json({ error: "Covers de usuario no encontrado" });
+      }
+    } catch (err) {
+      res.json(err);
     }
- 
+  } else {
+    try {
+      const rows = await Post.getCovers(req.body);
+      if (rows["length"] > 0) {
+        res.json(rows);
+      } else {
+        res.json({ error: "Covers de usuario no encontrado" });
+      }
+    } catch (err) {
+      res.json(err);
+    }
+  }
 });
 
 // POST http://localhost:3000/api/posts/children
@@ -198,17 +197,29 @@ router.use(middlewares.registerAction);
 
 // POST http://localhost:3000/api/posts
 router.post("/create", async (req, res) => {
-  const result = await Post.create(req.body);
-  
-  if (result["affectedRows"] === 1) {
-    //si es un post inicial se actualiza su fk_ancestro a su propia id, la idea es que en el resto de casos la fk_ancestro sea igual a la de su padre y no tener que recorrer todo el árbol hasta el origen cada vez que se necesite.
-    if (req.body.fk_ancestro === null) {
-      await Post.putAncestro(result["insertId"]);
+  try {
+    const result = await Post.create(req.body);
+
+    if (result["affectedRows"] === 1) {
+      //si es un post inicial se actualiza su fk_ancestro a su propia id, la idea es que en el resto de casos la fk_ancestro sea igual a la de su padre y no tener que recorrer todo el árbol hasta el origen cada vez que se necesite.
+      if (req.body.fk_ancestro === null) {
+        try {
+          await Post.putAncestro(result["insertId"]);
+        } catch (err) {
+          res.json(err);
+        }
+      }
+      try {
+        const post = await Post.getById(result["insertId"]);
+        res.json(post);
+      } catch (err) {
+        res.json(err);
+      }
+    } else {
+      res.json({ error: "El post no se ha insertado" });
     }
-    const post = await Post.getById(result["insertId"]);
-    res.json(post);
-  } else {
-    res.json({ error: "El post no se ha insertado" });
+  } catch (err) {
+    res.json(err);
   }
 });
 
@@ -283,7 +294,7 @@ router.delete("/comments/delete", async (req, res) => {
 
 router.post("/privatebyuser", async (req, res) => {
   if (req.body.userid != req.body.id) {
-    res.json({errors: "prohibido"});
+    res.json({ errors: "prohibido" });
   }
   try {
     const rows = await Post.getPrivateByUser(req.body);
